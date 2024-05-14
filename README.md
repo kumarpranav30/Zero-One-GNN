@@ -17,3 +17,12 @@ conda install torch torchvision torchaudio -c pytorch
 conda install pyg -c pyg
 pip install -r requirements.txt
 ```
+
+## Simulation
+
+Simply run simulate.py, save results in the Results folder.
+```
+python Code/simulate.py
+```
+
+
