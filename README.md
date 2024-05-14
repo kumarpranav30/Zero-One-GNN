@@ -1,4 +1,4 @@
-Code to verify Zero-One Laws on GNNs based on [paper] (https://arxiv.org/pdf/2301.13060).
+Code to verify Zero-One Laws on GNNs based on this paper https://arxiv.org/pdf/2301.13060.
 
 ## Setup
 
