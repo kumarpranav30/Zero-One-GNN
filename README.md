@@ -1,4 +1,4 @@
-Code to verify Zero-One Laws on GNNs based on https://arxiv.org/pdf/2301.13060.
+Code to verify Zero-One Laws on GNNs based on [paper] https://arxiv.org/pdf/2301.13060.
 
 ## Setup
 
@@ -13,7 +13,7 @@ Create a conda environment and activate it.
 
 Install dependencies
 ```
-conda install pytorch torchvision torchaudio
+conda install torch torchvision torchaudio -c pytorch
 conda install pyg -c pyg
 pip install -r requirements.txt
 ```
