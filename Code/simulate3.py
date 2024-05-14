@@ -13,18 +13,16 @@ class GCN(torch.nn.Module):
     def __init__(self):
         super(GCN, self).__init__()
         self.conv1 = GCNConv(emb_size, 128) 
-        self.conv2 = GCNConv(128, 32)  # Output a single feature per node
-        self.fc1 = torch.nn.Linear(32, 16)  # First MLP layer
-        self.fc2 = torch.nn.Linear(16, 1)
+        self.conv2 = GCNConv(128, 32)
+        self.conv3 = GCNConv(32, 1)  # Output a single feature per node
         self.initialize_weights()
 
     def forward(self, data):
         x, edge_index, batch = data.x, data.edge_index, data.batch
         x = F.relu(self.conv1(x, edge_index))
         x = F.relu(self.conv2(x, edge_index))
+        x = self.conv3((x, edge_index))
         x = global_mean_pool(x, batch)  # Mean pooling
-        x = F.relu(self.fc1(x))  # First MLP layer with ReLU
-        x = self.fc2(x)  # Second MLP layer
         return torch.sigmoid(x)  # Sigmoid activation at the output
 
     def initialize_weights(self):
@@ -42,19 +40,19 @@ def generate_graph(n, p=0.5):
     data = from_networkx(G)
     return data
 
-iterations = 20 
+iterations = 10
 plt.figure(figsize=(10, 6))
 
 for num_itr in range(iterations):
-    print(f'ITERATION {num_itr+1}')
+    # print(f'ITERATION {num_itr+1}')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = GCN().to(device)
     model.eval()  # Set the model to evaluation mode
     outputs = []
-    ns = range(1, 62, 2)
+    ns = range(1, 41, 5)
     samples = 15
     for n in ns:
-        print(f'Nodes = {n}')
+        # print(f'Nodes = {n}')
         cnt = 0
         for itr in range(samples):
             if n > 0:
