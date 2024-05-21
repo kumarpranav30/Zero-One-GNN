@@ -6,6 +6,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from torch_geometric.utils.convert import from_networkx
 import random
+import time
 
 node_emb_size = 128
 
@@ -45,24 +46,32 @@ def generate_graph(n, p=0.5):
 iterations = 10 # Number of random GNNs to test the law on
 plt.figure(figsize=(10, 6))
 
+ns = range(1, 5002, 500)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"Device: {device}")
 for num_itr in range(iterations):
+    start_itr = time.time()
     print(f'ITERATION {num_itr+1}')
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = GCN().to(device)
     model.eval()  # Set the model to evaluation mode
     outputs = []
-    ns = list(range(1, 30, 1)) + list(range(30, 150, 15))
-    samples = 32
+    samples = 20
+
     for n in ns:
-        print(f'Nodes = {n}')
+        print(f'Nodes = {n}', end = ", ")
         cnt = 0
+        start_node = time.time()
         for itr in range(samples):
             if n > 0:
                 graph_data = generate_graph(n).to(device)
                 output = model(graph_data)
-                if output.item() > 0.5: cnt += 1
+                if output.item() >= 0.5: cnt += 1
         outputs.append(cnt/samples * 100)
-        
+        print(f"Time taken: {(time.time() - start_node):.2f}s", end = ", ")
+        print(f"Output: {outputs[-1]}%")
+    end_itr = time.time()
+    total_tme = end_itr - start_itr
+    print(f"TOTAL TIME: {(total_tme)//60} mins {(total_tme)%60:.2f} seconds")
     # Plot the results
     plt.plot(ns, outputs, label=f'Iteration {num_itr + 1}')
 

@@ -22,19 +22,24 @@ class GCN(torch.nn.Module):
     def forward(self, data):
         x, edge_index, batch = data.x, data.edge_index, data.batch
         x = torch.sin(self.conv1(x, edge_index))
-        x = torch.sin(self.conv2(x, edge_index))
+        x = torch.sin(self.conv2(x  , edge_index))
         x = global_mean_pool(x, batch)  # Mean pooling
         x = torch.tanh(self.fc1(x))  # First MLP layer with tanh
         x = torch.tanh(self.fc2(x))  # Second MLP layer
         return torch.sigmoid(x)  # Sigmoid activation at the output
 
     def initialize_weights(self):
-        # Initialize weights for each Convolutional layer
+    # Initialize weights for each layer
         for m in self.modules():
-            if isinstance(m, GCNConv):
-                torch.nn.init.uniform_(m.lin.weight, -1, 1)  # Set random weights and biases
-                if m.lin.bias is not None:
-                    torch.nn.init.uniform_(m.lin.bias, -1, 1)
+            if isinstance(m, (GCNConv, torch.nn.Linear)):
+                if hasattr(m, 'lin'):
+                    torch.nn.init.uniform_(m.lin.weight, -1, 1)  # Set random weights
+                    if m.lin.bias is not None:
+                        torch.nn.init.uniform_(m.lin.bias, -1, 1)  # Set random biases
+                elif hasattr(m, 'att'):
+                    torch.nn.init.uniform_(m.att.weight, -1, 1)  # Set random weights
+                    if m.att.bias is not None:
+                        torch.nn.init.uniform_(m.att.bias, -1, 1)  # Set random biases
 
 def generate_graph(n, p=0.5):
     G = nx.erdos_renyi_graph(n, p)
@@ -46,16 +51,18 @@ def generate_graph(n, p=0.5):
 iterations = 5 # Number of random GNNs to test the law on
 plt.figure(figsize=(10, 6))
 
-ns = range(1, 151, 3)
+ns = range(1, 1502, 50)
+samples = 20
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Device: {device}")
+
 for num_itr in range(iterations):
     start_itr = time.time()
     print(f'ITERATION {num_itr+1}')
     model = GCN().to(device)
     model.eval()  # Set the model to evaluation mode
     outputs = []
-    samples = 20
 
     for n in ns:
         print(f'Nodes = {n}', end = ", ")
@@ -65,7 +72,7 @@ for num_itr in range(iterations):
             if n > 0:
                 graph_data = generate_graph(n).to(device)
                 output = model(graph_data)
-                if output.item() > 0.5: cnt += 1
+                if output.item() >= 0.5: cnt += 1
         outputs.append(cnt/samples * 100)
         print(f"Time taken: {(time.time() - start_node):.2f}s", end = ", ")
         print(f"Output: {outputs[-1]}%")
