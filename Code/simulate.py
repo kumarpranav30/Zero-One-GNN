@@ -29,12 +29,17 @@ class GCN(torch.nn.Module):
         return torch.sigmoid(x)  # Sigmoid activation at the output
 
     def initialize_weights(self):
-        # Initialize weights for each Convolutional layer
+    # Initialize weights for each layer
         for m in self.modules():
-            if isinstance(m, GCNConv):
-                torch.nn.init.uniform_(m.lin.weight, -1, 1)  # Set random weights and biases
-                if m.lin.bias is not None:
-                    torch.nn.init.uniform_(m.lin.bias, -1, 1)
+            if isinstance(m, (GCNConv, torch.nn.Linear)):
+                if hasattr(m, 'lin'):
+                    torch.nn.init.uniform_(m.lin.weight, -1, 1)  # Set random weights
+                    if m.lin.bias is not None:
+                        torch.nn.init.uniform_(m.lin.bias, -1, 1)  # Set random biases
+                elif hasattr(m, 'att'):
+                    torch.nn.init.uniform_(m.att.weight, -1, 1)  # Set random weights
+                    if m.att.bias is not None:
+                        torch.nn.init.uniform_(m.att.bias, -1, 1)  # Set random biases
 
 def generate_graph(n, p=0.5):
     G = nx.erdos_renyi_graph(n, p)
