@@ -25,6 +25,6 @@ Simply run simulate.py or simulate_sine.py, save results in the Results folder.
 python Code/simulate.py
 ```
 ```
-python Code/simulate.py
+python Code/simulate_sine.py
 ```
 
